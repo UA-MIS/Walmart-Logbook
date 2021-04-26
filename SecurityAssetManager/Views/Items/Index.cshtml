@@ -1,0 +1,167 @@
+﻿@model IEnumerable<SecurityAssetManager.Models.Item>
+
+@{
+    ViewBag.Title = "Items";
+}
+
+@if (ViewBag.FilteredItems == null)
+{
+    <h2>List of Items</h2>
+}
+else
+{
+    <h2>Your Items</h2>
+}
+
+@if (User.IsInRole("Admin") || User.IsInRole("Auditor"))
+{
+    <div style="float: right; padding: 10px;">
+        <a href="@Url.Action("exportCSV", "Items")" title="Downloads the list as a .csv file" class="download">
+            <img src="@Url.Content("~/Content/WalmartDownload.png")" style="height:33px;width:45px">
+            <p style="font-size: 10px; color: #003087; margin-bottom:0px;">Download</p>
+        </a>
+    </div>
+}
+
+@if (User.IsInRole("Admin") || User.IsInRole("Keyholder"))
+{
+    <div style="padding: 10px;">
+        @Html.ActionLink("New Item", "Create", "Items", null, new { @class = "btn btn-primary" })
+
+        @if (User.IsInRole("Keyholder"))
+        {
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" style="padding-top: 10px; padding-bottom: 10px; line-height: 20px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    View
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <li>@Html.ActionLink("View Your Items", "KeyholderIndex", "Items", null)</li>
+                    <li>@Html.ActionLink("View All Items In Your Domain(s)", "Index", "Items", null)</li>
+                </ul>
+            </div>
+        }
+    </div>
+}
+
+
+
+<table id="items" class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.First().Name)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.First().Container.Name)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.First().Description)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.First().Container.Domain.DomainName)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.First().Barcode)
+            </th>
+
+            @if ((User.IsInRole("Admin")) || (User.IsInRole("Keyholder")))
+            {
+                <th>Actions</th>
+            }
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.ActionLink(item.Name, "Details", new { id = item.ItemID })
+                </td>
+                <td>
+                    @Html.ActionLink(item.Container.Name, "Details", "Containers", new { id = item.ContainerID }, null)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Container.Domain.DomainName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Barcode)
+                </td>
+
+                @if ((User.IsInRole("Admin")) || (User.IsInRole("Keyholder")))
+                {
+                    <td>
+                        @if (User.Identity.Name == item.Container.User.Email)
+                        {
+                            if (item.Status == true)
+                            {
+                                @Html.ActionLink("Check out", "CheckInOut", new { id = item.ItemID }, new { style = "color:Green" })
+                                <span>|</span>
+                            }
+                            else
+                            {
+                                @Html.ActionLink("Check in", "CheckInOut", new { id = item.ItemID }, new { style = "color:Red;" })
+                                <span>|</span>
+                            }
+                        }
+                        @if (User.Identity.Name == item.Container.User.Email || User.IsInRole("Admin"))
+                        {
+                            @Html.ActionLink("Edit", "Edit", new { id = item.ItemID })
+                        }
+                    </td>
+
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            var table = $('#items').DataTable({
+                aaSorting: [[0, 'asc']],
+                "columnDefs": [
+                    { "name": "Item Name", "orderable": true, "targets": 0 },
+                    { "name": "Container Name", "orderable": true },
+                    { "name": "Description", "orderable": false },
+                    { "name": "Domain Name", "orderable": false, "targets": 3 },
+                    { "name": "Barcode", "orderable": false },
+                    { "name": "Action", "orderable": false },
+                ],
+
+                initComplete: function () {
+                    this.api().columns([3]).every(function () {
+                        var column = this;
+                        var select = $('<select><option value="">All Domains</option></select>')
+                            .appendTo($(column.header()).empty())
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex(
+                                    $(this).val()
+                                );
+
+                                column
+                                    .search(val ? '^' + val + '$' : '', true, false)
+                                    .draw();
+                            });
+
+                        column.data().unique().sort().each(function (d, j) {
+                            select.append('<option value="' + d + '">' + d + '</option>')
+                        });
+                    });
+                }
+
+
+            });
+        });
+    </script>
+}

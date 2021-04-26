@@ -1,0 +1,59 @@
+﻿@using SecurityAssetManager.Models
+@{
+    ViewBag.Title = "Create";
+}
+
+<h2>@ViewBag.Title</h2>
+
+
+@using (Html.BeginForm("Create", "UsersAdmin", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="col-md-8">
+        <select class="form-control" id="mySelect" name="mySelect">
+            <option>
+                @DomainHelper.CurrentDomain()
+            </option>
+            <option>Local Account</option>
+        </select>
+        <div id="local">
+            @Html.Partial("_CreatePartial", new RegisterViewModel { ReturnUrl = ViewBag.ReturnUrl })
+        </div>
+        <div id="ad">
+            @Html.Partial("_AdCreatePartial", new AdRegisterViewModel { ReturnUrl = ViewBag.ReturnUrl })
+        </div>
+    </div>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        //If user role selected is Auditor, then this function prompts an alert.
+        function viewOnlyAlert(id, pid) {
+            var checkBox = document.getElementById(id);
+            if (checkBox.checked == true) {
+                return alert("Auditor is view only. This means the user will not be able to perform any actions within the application.");
+            }
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $('#local').hide();
+            $('#ad').show();
+        });
+    </script>
+
+    <script>
+        $("#mySelect").change(function () {
+            if ($("#mySelect").val() == "Local Account") {
+                $('#local').show();
+                $('#ad').hide();
+            }
+            else {
+                $('#local').hide();
+                $('#ad').show();
+            }
+        });
+    </script>
+}

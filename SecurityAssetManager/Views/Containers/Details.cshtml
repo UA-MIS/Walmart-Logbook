@@ -1,0 +1,157 @@
+﻿@model SecurityAssetManager.Models.ViewModels.ContainerDetailViewModel
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>
+    @Model.container.Name Details
+</h2>
+
+<div class="dropdown">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" style="padding-top: 10px; padding-bottom: 10px; line-height: 20px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Actions
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        @if (User.IsInRole("Admin"))
+        {
+            <li>@Html.ActionLink("Edit", "Edit", new { id = Model.container.ContainerID }, null)</li>
+            <li> @Html.ActionLink("Archive", "Archive", new { id = Model.container.ContainerID }, null)</li>
+            @*
+            Bulk Duplicate doesn't really make sense without a lot of new code because a new barcode will need to be input
+            for each item. This is something that can be looped back around to, but for now best not to include it.
+            <li>@Html.ActionLink("Duplicate Items", "BulkDuplicate", new { id = Model.container.ContainerID }, null)</li>
+            *@
+        }
+        <li>@Html.ActionLink("Container Event Log", "Index", "Events", new { filter = Model.container.ContainerID }, null)</li>
+
+    </ul>
+</div>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.container.Location.Name):
+        </dt>
+
+        <dd>
+            @*@Html.DisplayFor(model => model.container.Location.Name)*@
+            @Html.ActionLink(Model.container.Location.Name, "Details", "Locations", new { id = Model.container.LocationID }, null) @*Action linking to the Location that the Container is apart of. *@
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.container.Name):
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.container.Name)
+        </dd>
+        <dt>
+            Key Holder:
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.container.User.Email)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.container.Domain.DomainName):
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.container.Domain.DomainName)
+        </dd>
+    </dl>
+</div>
+
+<hr />
+<h4>List of Container Items</h4>
+
+<table id="items" class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.items.First().Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.items.First().Container.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.items.First().Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.items.First().Container.Domain.DomainName)
+            </th>
+
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model.items)
+        {
+            <tr>
+                <td>
+                    @Html.ActionLink(item.Name, "Details", "Items", new { id = item.ItemID }, null)
+                </td>
+                <td>
+                    @Html.ActionLink(item.Container.Name, "Details", "Containers", new { id = item.ContainerID }, null)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.ActionLink(item.Container.Domain.DomainName, "Details", "Domains", new { id = item.Container.Domain.DomainID }, null)
+                </td>
+                @if ((User.IsInRole("Admin")) || (User.IsInRole("Keyholder")))
+                {
+                    <td>
+                        @if (User.Identity.Name == item.Container.User.Email)
+                        {
+                            if (item.Status == true)
+                            {
+                                @Html.ActionLink("Check out", "CheckInOut", "Items", new { id = item.ItemID }, new { style = "color:Green" })
+                            }
+                            else
+                            {
+                                @Html.ActionLink("Check in", "CheckInOut", "Items", new { id = item.ItemID }, new { style = "color:Red;" })
+                            }
+                            <span>|</span>
+                        }
+                        @if (User.Identity.Name == item.Container.User.Email || User.IsInRole("Admin"))
+                        {
+                            @Html.ActionLink("Edit", "Edit", "Items", new { id = item.ItemID }, null)
+                        }
+                        
+                    </td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <p>
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+    </p>
+
+
+    @section scripts
+{
+        <script>
+            $(document).ready(function () {
+                $('#items').DataTable({
+                    aaSorting: [[0, 'asc']],
+                    searching: false,
+                    "lengthChange": false,
+                    "columns": [
+                        { "name": "Item Name", "orderable": true },
+                        { "name": "Container Name", "orderable": true },
+                        { "name": "Description", "orderable": true },
+                        { "name": "Domain Name", "orderable": true },
+                        { "name": "Actions", "orderable": false }
+                    ]
+                });
+            });
+        </script>
+    }

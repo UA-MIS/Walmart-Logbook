@@ -1,0 +1,41 @@
+﻿@model SecurityAssetManager.Models.Domain
+
+@{
+    ViewBag.Title = "Archive";
+}
+
+<h2>Archive</h2>
+
+<h3>Are you sure you want to archive this?</h3>
+<div>
+    <h4>Domain</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.DomainName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DomainName)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <dt style="padding-left: 75px">
+            @Html.Label("Justification")
+        </dt>
+
+        <dd>
+            <textarea name="justification" style="margin-left: 180px" required></textarea>
+        </dd>
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Archive" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

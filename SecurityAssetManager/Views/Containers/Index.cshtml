@@ -1,0 +1,118 @@
+﻿@model IEnumerable<SecurityAssetManager.Models.Container>
+
+@{
+    ViewBag.Title = "Containers";
+}
+
+<h2>List of Containers</h2>
+
+    @if (User.IsInRole("Admin") || User.IsInRole("Auditor"))
+    {
+        <div style="padding:10px; float: right;">
+            <a href="@Url.Action("exportCSV", "Containers")" title="Downloads the list as a .csv file" class="download">
+                <img src="@Url.Content("~/Content/WalmartDownload.png")" style="height:33px;width:45px">
+                <p style="font-size: 10px; color: #003087; margin-bottom:0px;">Download</p>
+            </a>
+        </div>
+     }
+    @*This action is limited to users only in Admin or Keyholder role*@
+    @if (User.IsInRole("Admin"))
+    {
+        <div style="padding:10px;">
+            @*Clickable New Container button, brings user to Create view*@
+            @Html.ActionLink("New Container", "Create", "Containers", null, new { @class = "btn btn-primary" })
+
+        </div>
+    }
+
+        @*Creates table of container information*@
+        <table id="containers" class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.First().Name)
+                    </th>
+                    <th>
+                        Key Holder
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.First().Location.Name)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.First().Domain.DomainName)
+                    </th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.ActionLink(item.Name, "Details", new { id = item.ContainerID })
+                        </td>
+                        <td>
+                            @Html.ActionLink(item.User.Email, "Details", "UsersAdmin", new { id = item.UserID }, null)
+                        </td>
+                        <td>
+                            @Html.ActionLink(item.Location.Name, "Details", "Locations", new { id = item.LocationID }, null)
+                        </td>
+                        <th>
+                            @Html.DisplayFor(modelItem => item.Domain.DomainName)
+                        </th>
+                        @if ((User.IsInRole("Admin")))
+                        {
+                            <td>
+                                @Html.ActionLink("Edit", "Edit", new { id = item.ContainerID })
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @*Allows data in table to be sortable*@
+        @*Allows ojects in table to be searchable*@
+        @*Allows for pagination of container table*@
+        @*Allows Domain column to become filterable Domain tab*@
+        @section scripts
+{
+            <script>
+                $(document).ready(function () {
+                    $('#containers').DataTable({
+                        aaSorting: [[0, 'asc']],
+                        "columns": [
+                            { "name": "Container Name", "orderable": true },
+                            { "name": "Owner", "orderable": true },
+                            { "name": "Location Name", "orderable": true },
+                            { "name": "Domain Name", "orderable": false, "targets": 3 },
+                            { "name": "Actions", "orderable": false }
+                        ],
+
+                        initComplete: function () {
+                            this.api().columns([3]).every(function () {
+                                var column = this;
+                                var select = $('<select><option value="">All Domains</option></select>')
+                                    .appendTo($(column.header()).empty())
+                                    .on('change', function () {
+                                        var val = $.fn.dataTable.util.escapeRegex(
+                                            $(this).val()
+                                        );
+
+                                        column
+                                            .search(val ? '^' + val + '$' : '', true, false)
+                                            .draw();
+                                    });
+
+                                column.data().unique().sort().each(function (d, j) {
+                                    var v = 'value="' + d;
+                                    select.append('<option value="' + d + '">' + d + '</option>')
+                                });
+                            });
+                        }
+                    });
+                });
+            </script>
+        }
+

@@ -1,0 +1,193 @@
+﻿@using System.Diagnostics.Eventing.Reader
+@using SecurityAssetManager.Models
+@model IEnumerable<SecurityAssetManager.Models.Event>
+
+@{
+    ViewBag.Title = "Event Log";
+}
+
+
+<h2>Event Log</h2>
+
+<table id="events" class="table" style="border-collapse: collapse; table-layout: auto; width: 100% !important">
+    <thead>
+        <tr>
+            <th style="text-align:center;">
+                @if (User.IsInRole("Admin") || User.IsInRole("Auditor"))
+                {
+                    <a href="@Url.Action("exportCSV", "Events")" title="Downloads the log as a .csv file" class="download">
+                        <img src="@Url.Content("~/Content/WalmartDownload.png")" style="height:33px;width:45px">
+                        <p style="font-size: 10px; color: #003087; margin-bottom:0px;">Download</p>
+                    </a>
+                }
+            </th>
+            <th>Domain</th>
+            <th>Name</th>
+            <th>Action</th>
+            <th>User</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr data-child-value="@item.ItemName^@item.Action^@item.User^@item.DateTimeCreated.ToString()^@item.Justification">
+
+                <td style="vertical-align: middle">
+                    <img src="/Content/DataTables/images/events_open1.png" id="detailsIcon" data-toggle="collapse" data-target="#eventDetails"
+                         class="accordion-toggle" alt="expand/collapse">
+                </td>
+
+                <td style="vertical-align: middle"> @Html.DisplayFor(modelItem => item.DomainName)</td>
+
+                @if (item.EventDescription == "Item" || item.EventDescription == "Check In" || item.EventDescription == "Check Out")
+                {
+                    <td style="vertical-align: middle">@Html.ActionLink(item.ItemName, "Details", "Items", new { id = item.ItemID }, null)</td>
+                }
+
+                else if (item.EventDescription == "Container")
+                {
+                    <td style="vertical-align: middle">@Html.ActionLink(item.ItemName, "Details", "Containers", new { id = item.ItemID }, null)</td>
+                }
+
+                else if (item.EventDescription == "Location")
+                {
+                    <td style="vertical-align: middle">@Html.ActionLink(item.ItemName, "Details", "Locations", new { id = item.ItemID }, null)</td>
+                }
+
+                else if (item.EventDescription == "Domain")
+                {
+                    <td style="vertical-align: middle">@Html.ActionLink(item.ItemName, "Details", "Domains", new { id = item.ItemID }, null)</td>
+                }
+
+                else if (item.EventDescription == "User")
+                {
+                    <td style="vertical-align: middle">@Html.ActionLink(item.ItemName, "Details", "UsersAdmin", new { id = item.ItemID }, null)</td>
+                }
+
+                else
+                {
+                    <td style="vertical-align: middle">@Html.DisplayFor(modelItem => item.ItemName)</td>
+                }
+                <td style="vertical-align: middle">@Html.DisplayFor(modelItem => item.Action)</td>
+
+                <td style="vertical-align: middle">@Html.DisplayFor(modelItem => item.User)</td>
+
+                <td style="vertical-align: middle">@Convert.ToDateTime(item.DateTimeCreated).ToString("MM/dd/yyyy HH:mm tt")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts
+{
+    @Styles.Render("~/Content/dataTables")
+    @Scripts.Render("~/bundles/dataTables")
+
+    <script>
+        //Formats hidden details row's text
+        function format(value) {
+            value = value.split("^");
+            var row = new Array();
+
+            for (var i = 0; i < value.length; i++) {
+                row.push(value[i]);
+                if (i != value.length - 1) {
+                    row.push(" ");
+                }
+            }
+            if (row[2].toString().length > 150) {
+                var str = row[2].toString().substring(0, 149);
+                str = str + "<br> ";
+                for (var i = 150; i < row[2].toString().length; i = i + 150) {
+                    if ((i + 149) <= row[2].toString().length) {
+                        str = str + row[2].toString().substring(i, i + 149) + "<br> ";
+                    }
+                    else {
+                        str = str + row[2].toString().substring(i, row[2].toString().length - 1) + "<br> ";
+                    }
+                }
+                //If the event has no justification
+                if (row[8].localeCompare("null") == 0) {
+                    return ('<pre><b>' + 'Details: ' + '</b><br><em>' + row[0] + ':</em><br>' + str + 'by ' + '<em>' + row[4] + '</em>' + ' on ' +
+                        row[6]);
+                }
+                //If the event has justification
+                else {
+                    return ('<pre><b>' + 'Details: ' + '</b><br><em>' + row[0] + ':</em><br> ' + str + 'by ' + '<em>' + row[4] + '</em>' + ' on ' +
+                        row[6] + '<br><br><b>' + 'Justification: ' + '</b><br>' + row[8] + '<br>');
+                }
+            }
+            else {
+
+                //If the event has no justification
+                if (row[8].localeCompare("null") == 0) {
+                    return ('<pre><b>' + 'Details: ' + '</b><br><em>' + row[0] + ':</em><br>' + row[2].toString() + '<br> by ' + '<em>' + row[4] + '</em>' + ' on ' +
+                        row[6]);
+                }
+                //If the event has justification
+                else {
+                    return ('<pre><b>' + 'Details: ' + '</b><br><em>' + row[0] + ':</em><br> ' + row[2].toString() + '<br> by ' + '<em>' + row[4] + '</em>' + ' on ' +
+                        row[6] + '<br><br><b>' + 'Justification: ' + '</b><br>' + row[8] + '<br>');
+                }
+            }
+        }
+
+        //Initializes datatable
+        $(document).ready(function () {
+            var oTable = $('#events').DataTable({
+
+                "columnDefs": [
+                    { "orderable": false, "targets": 0 },
+                    { "orderable": false, "targets": 1 },
+                    { "name": "Name", "orderable": true, "targets": 2 },
+                    { "name": "Action", "orderable": true },
+                    { "name": "User", "orderable": true },
+                    { "Type": "date", "targets": 5, "name": "Date", "orderable": true },
+                ],
+                aaSorting: [[5, 'desc']],
+                //Creates drop down menu for the event type column
+                initComplete: function () {
+                    this.api().columns([1]).every(function () {
+                        var column = this;
+                        var select = $('<select><option value="">All Domains</option></select>')
+                            .appendTo($(column.header()).empty())
+                            .on('change',
+                                function () {
+                                    var val = $.fn.dataTable.util.escapeRegex(
+                                        $(this).val()
+                                    );
+
+                                    column
+                                        .search(val ? '^' + val + '$' : '', true, false)
+                                        .draw();
+                                });
+                        column.data().unique().sort().each(function (d, j) {
+                            select.append('<option value="' + d + '">' + d + '</option>')
+                        });
+                    });
+                }
+            });
+
+            //Opens hidden details row on click of image
+            $('#events tbody').on('click', 'tr td img.accordion-toggle', function () {
+                //Gets the row
+                var tr = $(this).closest('tr');
+                var row = oTable.row(tr);
+
+                //If hidden row is open then it changes the image and hides the row
+                if (row.child.isShown()) {
+                    this.src = "/Content/DataTables/images/events_open1.png";
+                    row.child.hide();
+                }
+                //If hidden row is hidden then it changes the image and opens the row
+                else {
+                    this.src = "/Content/DataTables/images/events_close1.png";
+                    row.child(format(tr.data('child-value'))).show();
+
+                }
+            });
+        });
+    </script>
+}

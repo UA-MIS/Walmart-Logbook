@@ -1,0 +1,53 @@
+﻿@model SecurityAssetManager.Models.Container
+
+@{
+    ViewBag.Title = "Archive";
+}
+
+<h2>Archive</h2>
+
+<h3>Are you sure you want to archive this?</h3>
+<div>
+    <h4>Container</h4>
+    <hr />
+    @*Displays location and container name *@
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Location.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Location.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+
+
+    </dl>
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        @*Creates justification text box*@
+        <dt style="padding-left: 75px">
+            @Html.Label("Justification")
+        </dt>
+
+        <dd>
+            <textarea name="justification" style="margin-left: 180px" required></textarea>
+        </dd>
+
+        @*Creates clickable Archive button and action link that redirects user to Index view*@
+        <div class="form-actions no-color">
+            <input type="submit" value="Archive" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

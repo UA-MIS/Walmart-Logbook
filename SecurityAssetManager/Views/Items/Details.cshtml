@@ -1,0 +1,240 @@
+﻿@model SecurityAssetManager.Models.ViewModels.ItemDetailViewModel
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>@Model.item.Name Details</h2>
+
+
+@if (User.IsInRole("Admin") || (User.IsInRole("Keyholder") && (User.Identity.Name == Model.item.Container.User.Email)))
+{
+<div class="dropdown">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" style="padding-top: 10px; padding-bottom: 10px; line-height: 20px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Actions
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        @if (User.IsInRole("Admin") || User.IsInRole("Keyholder"))
+        {
+            <li>@Html.ActionLink("Edit", "Edit", new { id = Model.item.ItemID }, null)</li>
+            <li>@Html.ActionLink("Archive", "Archive", new { id = Model.item.ItemID }, null)</li>
+            <li>@Html.ActionLink("Duplicate Item", "Duplicate", "Items", new { id = Model.item.ItemID }, null)</li>
+        }
+    </ul>
+</div>
+}
+
+<div>
+    <h4>Item</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.item.Container.Name):
+        </dt>
+
+        <dd>
+            @*@Html.DisplayFor(model => model.item.Container.Name)*@
+            @Html.ActionLink(Model.item.Container.Name, "Details", "Containers", new { id = Model.item.ContainerID }, null) @*Action linking to the Container that the Item is apart of. *@
+        </dd>
+
+        <dt>
+            @*@Html.DisplayNameFor(model => model.item.Container.User.Email):*@
+            Key Holder:
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.item.Container.User.Email)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.item.Name):
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.item.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.item.Description):
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.item.Description)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.item.Barcode):
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.item.Barcode)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.item.Status):
+        </dt>
+
+        <dd>
+            @*@Html.DisplayFor(model => model.item.Status)*@
+            @if (Model.item.Status == true)
+            {
+                <p>Checked In</p>
+            }
+            else
+            {
+                <p>Checked Out</p>
+            }
+        </dd>
+
+        @if ((User.IsInRole("Admin")) || (User.IsInRole("Keyholder")))
+        {
+            <dd>
+                @if (User.Identity.Name == Model.item.Container.User.Email)
+                {
+                    if (Model.item.Status == true)
+                    {
+                        @Html.ActionLink("Check out", "CheckInOut", new { id = Model.item.ItemID }, new { @class = "btn btn-primary" })
+                    }
+                    else
+                    {
+                        @Html.ActionLink("Check in", "CheckInOut", new { id = Model.item.ItemID }, new { @class = "btn btn-primary" })
+                    }
+                }
+            </dd>
+        }
+
+    </dl>
+</div>
+
+<h4>@Model.item.Name Event Log</h4>
+
+<table id="events" class="table" style="border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th><!--Column for details toggle--></th>
+            <th>Domain</th>
+            <th>Name</th>
+            <th>Action</th>
+            <th>User</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model.events)
+        {
+            <tr data-child-value="@item.ItemName^@item.Action^@item.User^@item.DateTimeCreated.ToString()^@item.Justification">
+
+                <td style="vertical-align: middle">
+                    <img src="/Content/DataTables/images/events_open1.png" id="detailsIcon" data-toggle="collapse" data-target="#eventDetails"
+                         class="accordion-toggle" alt="expand/collapse">
+                </td>
+
+                <td style="vertical-align: middle"> @Html.DisplayFor(modelItem => item.DomainName)</td>
+
+                <td style="vertical-align: middle">@Html.DisplayFor(modelItem => item.ItemName)</td>
+
+                <td style="vertical-align: middle">@Html.DisplayFor(modelItem => item.Action)</td>
+
+                <td style="vertical-align: middle">@Html.DisplayFor(modelItem => item.User)</td>
+
+                <td style="vertical-align: middle">@Convert.ToDateTime(item.DateTimeCreated).ToString("MM/dd/yyyy HH:mm tt")</td>
+
+      </tr>
+      }
+        <tbody>
+    </table>
+
+    <p>
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+    </p>
+
+    @section scripts
+{
+        @Styles.Render("~/Content/dataTables")
+        @Scripts.Render("~/bundles/dataTables")
+
+        <script>
+            //Formats hidden details row's text
+            function format(value) {
+                value = value.split("^");
+                var row = new Array();
+
+                for (var i = 0; i < value.length; i++) {
+                    row.push(value[i]);
+                    if (i != value.length - 1) {
+                        row.push(" ");
+                    }
+                }
+
+                //If the event has no justification
+                if (row[8].localeCompare("null") == 0) {
+                    return ('<pre><b>' + 'Details: ' + '</b><br><em>' + row[0] + ':</em> ' + row[2].toString().toLowerCase() + ' by ' + '<em>' + row[4] + '</em>' + ' on ' +
+                        row[6]);
+                }
+                //If the event has justification
+                else {
+                    return ('<pre><b>' + 'Details: ' + '</b><br><em>' + row[0] + ':</em> ' + row[2].toString().toLowerCase() + ' by ' + '<em>' + row[4] + '</em>' + ' on ' +
+                        row[6] + '<br><br><b>' + 'Justification: ' + '</b><br>' + row[8] + '<br>');
+                }
+            }
+
+            //Initializes datatable
+            $(document).ready(function () {
+                var oTable = $('#events').DataTable({
+                    searching: false,
+                    "lengthChange": false,
+                    "columnDefs": [
+                        { "orderable": false, "targets": 0 },
+                        { "orderable": false, "targets": 1 },
+                        { "name": "Name", "orderable": true, "targets": 2 },
+                        { "name": "Action", "orderable": true },
+                        { "name": "User", "orderable": true },
+                        { "Type": "date", "targets": 5, "name": "Date", "orderable": true },
+                    ],
+                    aaSorting: [[5, 'desc']],
+                    //Creates drop down menu for the event type column
+                    initComplete: function () {
+                        this.api().columns([1]).every(function () {
+                            var column = this;
+                            var select = $('<select><option value="">All Domains</option></select>')
+                                .appendTo($(column.header()).empty())
+                                .on('change',
+                                    function () {
+                                        var val = $.fn.dataTable.util.escapeRegex(
+                                            $(this).val()
+                                        );
+
+                                        column
+                                            .search(val ? '^' + val + '$' : '', true, false)
+                                            .draw();
+                                    });
+                            column.data().unique().sort().each(function (d, j) {
+                                select.append('<option value="' + d + '">' + d + '</option>')
+                            });
+                        });
+                    }
+                });
+
+                //Opens hidden details row on click of image
+                $('#events tbody').on('click', 'tr td img.accordion-toggle', function () {
+                    //Gets the row
+                    var tr = $(this).closest('tr');
+                    var row = oTable.row(tr);
+
+                    //If hidden row is open then it changes the image and hides the row
+                    if (row.child.isShown()) {
+                        this.src = "/Content/DataTables/images/events_open1.png";
+                        row.child.hide();
+                    }
+                    //If hidden row is hidden then it changes the image and opens the row
+                    else {
+                        this.src = "/Content/DataTables/images/events_close1.png";
+                        row.child(format(tr.data('child-value'))).show();
+
+                    }
+                });
+            });
+        </script>
+    }

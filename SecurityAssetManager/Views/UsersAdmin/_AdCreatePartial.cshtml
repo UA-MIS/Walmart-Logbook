@@ -1,0 +1,55 @@
+﻿@model SecurityAssetManager.Models.AdRegisterViewModel
+@{
+    ViewBag.Title = "Create AD User";
+}
+
+
+
+
+@using (Html.BeginForm("AdCreate", "UsersAdmin", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    
+    <hr />
+    @Html.ValidationSummary("", new { @class = "text-error" })
+
+    @*Creates fillable un text box*@
+    <div class="form-group">
+        @Html.LabelFor(m => m.Username, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.Username, new { @class = "form-control" })
+        </div>
+    </div>
+
+
+
+    <div class="form-group">
+        <label class="col-md-2 control-label">
+            Select User Role
+        </label>
+        <div class="col-md-10">
+            @foreach (var item in (SelectList)ViewBag.RoleId)
+            {
+                @*If Auditor is selected, the viewOnlyAlert function is called*@
+                if (item.Value.Equals("Auditor"))
+                {
+                    <input id="audit" type="checkbox" name="SelectedRoles" value="@item.Value"
+                           class="checkbox-inline" onclick="viewOnlyAlert(this.id,'text1')" />
+                    @Html.Label(item.Value, new { @class = "control-label" })
+                }
+                @*Displays the other checkboxes that aren't Auditor*@
+                else
+                {
+                    <input id="selection" type="checkbox" name="SelectedRoles" value="@item.Value" class="checkbox-inline" />
+                    @Html.Label(item.Value, new { @class = "control-label" })
+                }
+            }
+        </div>
+    </div>
+    @*Clickable Create button*@
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input id="submit" type="submit" class="btn btn-default" value="Create" />
+        </div>
+    </div>
+}

@@ -1,0 +1,151 @@
+﻿@model SecurityAssetManager.Models.ViewModels.ItemArchiveViewModel
+
+@{
+    ViewBag.Title = "Archive";
+}
+
+<h2>Archive</h2>
+@if (User.IsInRole("Admin") || (User.IsInRole("Keyholder") && (User.Identity.Name == Model.Container.User.Email)))
+{
+    <h3>Are you sure you want to archive this?</h3>
+    <div class="form-horizontal">
+        <h4>Item</h4>
+        <hr />
+        @*
+        <dl class="dl-horizontal">
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <dt>
+                @Html.DisplayNameFor(model => model.Container.Name)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Container.Name)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Name)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Name)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Description)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Status)
+            </dt>
+
+            <dd>
+                if (Model.item.Status == true)
+                {
+                <p>Checked In</p>
+                }
+                else
+                {
+                <p>Checked Out</p>
+                }
+            </dd>
+
+        </dl>
+        *@
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.ItemID)
+            <div class="form-group">
+                @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DisplayFor(model => model.Name)
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DisplayFor(model => model.Description)
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Container", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DisplayFor(model => model.ContainerName, new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Key Holder", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DisplayFor(model => model.Container.User.Email, new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("Status", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @if (Model.Status == true)
+                    {
+                        <p>Checked In</p>
+                    }
+                    else
+                    {
+                        <p>Checked Out</p>
+                    }
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Witness, "Witness", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Witness, new { htmlAttributes = new { @class = "form-control" } })
+                    @*@Html.DropDownList("Witness", (IEnumerable<SelectListItem>)ViewBag.List, htmlAttributes: new { @class = "form-control" })*@
+                    @Html.ValidationMessageFor(model => model.Witness, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group" id="password">
+                @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", type = "password" } })
+                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group" id="justification">
+                @Html.LabelFor(model => model.Justification, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.TextAreaFor(model => model.Justification, new { htmlAttributes = new { @class = "form-control", type = "password" } })
+                    @Html.ValidationMessageFor(model => model.Justification, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Archive" class="btn btn-default" />
+                </div>
+            </div>
+            @*
+            <dt style="padding-left: 75px">
+                @Html.Label("Justification")
+            </dt>
+
+            <dd>
+                <textarea name="justification" style="margin-left: 180px" required></textarea>
+            </dd>
+
+            <div class="form-actions no-color">
+                <input type="submit" value="Archive" class="btn btn-default" /> |
+                @Html.ActionLink("Back to List", "Index")
+            </div>
+            *@
+        }
+        <p>
+            @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+        </p>
+    </div>
+}
+else
+{
+    <h4>You don't have permission to perform this action for this item. Please contact its keyholder or an admin.</h4>
+}

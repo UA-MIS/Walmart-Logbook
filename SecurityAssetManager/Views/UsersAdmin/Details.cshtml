@@ -1,0 +1,95 @@
+﻿@using System.Net.Mime
+@model SecurityAssetManager.Models.ApplicationUser
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>@Model.UserName Details.</h2>
+
+@if (User.IsInRole("Admin"))
+{
+    <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" style="padding-top: 10px; padding-bottom: 10px; line-height: 20px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Actions
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <li>@Html.ActionLink("Edit", "Edit", new { id = Model.Id }, null)</li>
+            <li>@Html.ActionLink("Archive", "Delete", new { id = Model.Id }, null)</li>
+        </ul>
+    </div>
+}
+
+    <div>
+        <h4>User</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            @*Displays user name*@
+            <dt>
+                @Html.DisplayNameFor(model => model.UserName)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.UserName)
+            </dd>
+        </dl>
+    </div>
+    <h4>List of roles for this user</h4>
+    @*Checks if there are any roles user is in*@
+    @if (ViewBag.RoleNames.Count == 0)
+    {
+        @*Returns message if no roles found*@
+        <hr />
+        <p>No roles found for this user.</p>
+    }
+
+    @*Creates and displays list of user roles if roles are found*@
+    <table class="table">
+
+        @foreach (var item in ViewBag.RoleNames)
+        {
+            <tr>
+                <td>
+                    @item
+                </td>
+            </tr>
+        }
+    </table>
+
+    <h4>List of domains for this user</h4>
+
+    @*Clickable buttons that perform a certain action for domain*@
+    @if (User.IsInRole("Admin"))
+    {
+    <p>
+        @Html.ActionLink("Add a Domain", "Create", "UserDomains", new { id = Model.Id }, new { @class = "btn btn-primary" })
+        @Html.ActionLink("Remove a Domain", "Archive", "UserDomains", new { id = Model.Id }, new { @class = "btn btn-primary" })
+    </p>
+    }
+    @*Checks if user is in any domain*@
+    @if (ViewBag.UserDomains == null)
+    {
+        @*Returns message if user not in any domain*@
+        <hr />
+        <p>No domains found for this user.</p>
+    }
+
+    @*Creates and displays list of domains user is under*@
+    <table class="table">
+
+        @foreach (var domain in ViewBag.UserDomains)
+        {
+            <tr>
+                <td>
+                    @domain.Text
+                </td>
+            </tr>
+        }
+    </table>
+
+    <p>
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+    </p>
+
+
+

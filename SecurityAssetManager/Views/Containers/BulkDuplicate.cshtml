@@ -1,0 +1,145 @@
+﻿@model SecurityAssetManager.Models.ViewModels.BulkDuplicateViewModel
+
+@{
+    ViewBag.Title = "Duplicate Container Items";
+}
+
+<h2>Duplicate Container Items</h2>
+
+<style type="text/css">
+    .error {
+        color: red;
+        display: none;
+    }
+</style>
+
+<div id="dupl">
+    @using (Ajax.BeginForm("BulkDuplicate", "Containers", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "dupl" }, new { id = "form" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.CurrentContainerID)
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-horizontal">
+
+            <div class="form-group">
+                <label class="col-md-2 control-label">
+                    Select Items to Duplicate
+                </label>
+                <div id="itemForm" class="col-md-10">
+                    @foreach (var item in (SelectList)ViewBag.ItemList)
+                    {
+                        <br />
+                        <input id="selection" type="checkbox" name="SelectedItems" value="@item.Value" data-val="true" class="checkbox-inline" />
+                        @Html.Label(item.Text, new { @class = "control-label" })
+                    }
+
+                    @if (((IEnumerable<dynamic>)ViewBag.ItemList).Count() > 1)
+                    {
+                        <br /><input type="checkbox" id="toggleAll" value="Select All" data-val="true" class="checkbox-inline" /> @Html.Label("Select All", new { @class = "control-label" })
+                    }
+                    <br /><span class="error">Please select at-least one Item.</span>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.NewContainerID, "Container", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownList("NewContainerID", (IEnumerable<SelectListItem>)ViewBag.ContainerID, "Select a Container", htmlAttributes: new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.NewContainerID, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.KeyHolder, "KeyHolder", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.DropDownList("KeyHolder", null, htmlAttributes: new { @class = "form-control", @readOnly = "readonly" })
+                    @Html.ValidationMessageFor(m => m.KeyHolder, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group" id="password">
+                @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", type = "password" } })
+                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input id="btnSubmit" type="submit" value="Duplicate" class="btn btn-default" />
+                </div>
+            </div>
+
+        </div>
+    }
+</div>
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+        <script type="text/javascript">
+            //Checks to make sure atleast one check box is selected
+            $(function () {
+                $("#btnSubmit").click(function () {
+                    var checked_checkboxes = $("#itemForm input[type=checkbox]:checked");
+                    if (checked_checkboxes.length == 0) {
+                        $(".error").show();
+                        return false;
+                    }
+                    return true;
+                });
+            });
+
+            $(document).ready(function () {
+                $("#toggleAll").click(function () {
+                    $(".checkbox-inline").attr('checked', this.checked);
+                });
+                $(".checkbox-inline").click(function () {
+                    if (!this.checked) {
+                        $("#toggleAll").attr('checked', false);
+                    }
+                    else if ($(".checkbox-inline").length == $(".checkbox-inline:checked").length) {
+                        $(".checkbox-inline").attr('checked', true);
+                    }
+                });  
+
+            //Dropdownlist Selectedchange event
+            $("#NewContainerID").change(function() {
+                $("#KeyHolder").empty();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetKeyHolder")', // we are calling json method
+
+                    dataType: 'json',
+
+                    data: { id: $("#NewContainerID").val() },
+                    // here we are get value of selected container and passing same value
+                    //as input to json method GetKey.
+
+                    success: function(keyHolders) {
+                        // keyHolders contains the JSON formatted list
+                        // of keyHolders passed from the controller
+
+                        $.each(keyHolders,
+                            function(i, keyHolders) {
+                                $("#KeyHolder").append('<option value="' +
+                                    keyHolders.Value +
+                                    '">' +
+                                    keyHolders.Text +
+                                    '</option>');
+                                // here we are adding option for KeyHolders
+
+                            });
+                        //   $("#password").show();
+                    },
+                    error: function(ex) {
+                        alert('Failed to retrieve key holders.' + ex);
+                    }
+                });
+                return false;
+            });
+        });
+        </script>
+    }

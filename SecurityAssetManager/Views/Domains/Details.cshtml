@@ -1,0 +1,86 @@
+﻿@model SecurityAssetManager.Models.ViewModels.DomainDetailViewModel
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>@Model.domain.DomainName Details</h2>
+
+@if (User.IsInRole("Admin") || User.IsInRole("Auditor"))
+{
+
+    <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" style="padding-top: 10px; padding-bottom: 10px; line-height: 20px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Actions
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            @if (User.IsInRole("Admin"))
+            {
+                <li>@Html.ActionLink("Edit", "Edit", new { id = Model.domain.DomainID }, null)</li>
+                <li>@Html.ActionLink("Archive", "Archive", new { id = Model.domain.DomainID }, null)</li>
+            }
+            <li>@Html.ActionLink("Domain Event Log", "Index", "Events", new { filter = Model.domain.DomainID }, null)</li>
+
+        </ul>
+    </div>
+
+    <div>
+        <h4>Domain</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.domain.DomainName)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.domain.DomainName)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.domain.Description)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.domain.Description)
+            </dd>
+        </dl>
+    </div>
+
+    <h6>List of Users</h6>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.users.First().UserName)
+            </th>
+            <th>
+
+            </th>
+        </tr>
+
+        @foreach (var user in Model.users)
+        {
+
+            <tr>
+                <td>
+                    @Html.ActionLink(user.UserName, "Details", "UsersAdmin", new { id = user.Id }, null)
+                </td>
+                @if ((User.IsInRole("Admin")) || (User.IsInRole("Keyholder")))
+                {
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", new { id = user.Id })
+                    </td>
+                }
+            </tr>
+
+        }
+
+    </table>
+
+    <p>
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+    </p>
+}
+else
+{
+    <h4>You do not have permission to access this page. Please contact an admin.</h4>
+}
+
+

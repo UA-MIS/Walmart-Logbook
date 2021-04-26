@@ -1,0 +1,66 @@
+﻿@model IEnumerable<SecurityAssetManager.Models.Domain>
+
+@{
+    ViewBag.Title = "Domains";
+}
+
+<h2>List of Domains</h2>
+
+@if (User.IsInRole("Admin") || User.IsInRole("Auditor"))
+{
+    <div style="float: right; padding: 10px;">
+        <a href="@Url.Action("exportCSV", "Domains")" title="Downloads the list as a .csv file" class="download">
+            <img src="@Url.Content("~/Content/WalmartDownload.png")" style="height:33px;width:45px">
+            <p style="font-size: 10px; color: #003087; margin-bottom:0px;">Download</p>
+        </a>
+    </div>
+}
+
+
+@if (User.IsInRole("Admin") || User.IsInRole("Auditor"))
+{
+    if (User.IsInRole("Admin") || User.IsInRole("Keyholder"))
+    {
+        <div style="padding: 10px;">
+            <p>
+                @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-primary" })
+            </p>
+        </div>
+            }
+
+
+            <table class="table">
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.DomainName)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Description)
+                    </th>
+                    <th></th>
+                </tr>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.ActionLink(item.DomainName, "Details", new { id = item.DomainID })
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Description)
+                        </td>
+                        @if ((User.IsInRole("Admin")) || (User.IsInRole("Keyholder")))
+                        {
+                            <td>
+                                @Html.ActionLink("Edit", "Edit", new { id = item.DomainID })
+                            </td>
+                        }
+                    </tr>
+                }
+
+            </table>
+            }
+            else
+            {
+            <h4>You do not have permission to access this page. Please contact an admin.</h4>
+            }

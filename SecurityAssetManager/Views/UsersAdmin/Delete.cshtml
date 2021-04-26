@@ -1,0 +1,43 @@
+﻿@model SecurityAssetManager.Models.ApplicationUser
+
+@{
+    ViewBag.Title = "Delete";
+}
+
+<h2>Delete.</h2>
+
+<h3>Are you sure you want to delete this User?</h3>
+<div>
+    <h4>User.</h4>
+    <hr />
+    @*Displays user name*@
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.UserName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserName)
+        </dd>
+    </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        @*Creates justification label and text box*@
+        <dt style="padding-left: 75px">
+            @Html.Label("Justification")
+        </dt>
+
+        <dd>
+            <textarea name="justification" style="margin-left: 180px" required></textarea>
+        </dd>
+
+        @*Clickable Delete button and clickable action link that redirects user back to Index view*@
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

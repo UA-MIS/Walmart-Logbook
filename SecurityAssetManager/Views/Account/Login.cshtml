@@ -1,0 +1,47 @@
+﻿@using SecurityAssetManager.Models
+@model AdLoginViewModel
+@{
+    ViewBag.Title = "Log In";
+}
+
+<h2>@ViewBag.Title</h2>
+<div class="row">
+    <div class="col-md-8">
+        <select class="form-control" id="mySelect" name="mySelect">
+            <option>
+                @DomainHelper.CurrentDomain()
+            </option>
+            <option>Local Account</option>
+        </select>
+        <div id="localLogin">
+            @Html.Partial("_LocalLoginPartial", new LoginViewModel { ReturnUrl = ViewBag.ReturnUrl })
+        </div>
+        <div id="adLogin">
+            @Html.Partial("_AdLoginPartial", new AdLoginViewModel { ReturnUrl = ViewBag.ReturnUrl })
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function () {
+            $('#localLogin').hide();
+            $('#adLogin').show();
+        });
+    </script>
+
+    <script>
+        $("#mySelect").change(function () {
+            if ($("#mySelect").val() == "Local Account") {
+                $('#localLogin').show();
+                $('#adLogin').hide();
+            }
+            else {
+                $('#localLogin').hide();
+                $('#adLogin').show();
+            }
+        });
+    </script>
+
+}

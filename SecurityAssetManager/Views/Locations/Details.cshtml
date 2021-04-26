@@ -1,0 +1,105 @@
+﻿@model SecurityAssetManager.Models.ViewModels.LocationDetailViewModel
+
+@{
+    ViewBag.Title = "Details";
+}
+
+@*This section of code allows a user to view extensive detail about a specific location. A user is able to view the name and description. It also allows the user to
+    view items, containers, and domains associated with the specific location.*@
+
+<h2>@Model.location.Name Details</h2>
+
+<div class="dropdown">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" style="padding-top: 10px; padding-bottom: 10px; line-height: 20px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Actions
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        @if (User.IsInRole("Admin") || User.IsInRole("KeyHolder"))
+        {
+            <li>@Html.ActionLink("Edit", "Edit", new { id = Model.location.LocationID }, null)</li>
+            <li>@Html.ActionLink("Archive", "Archive", new { id = Model.location.LocationID }, null)</li>
+        }
+    <li>@Html.ActionLink("Location Event Log", "Index", "Events", new { filter = Model.location.LocationID }, null)</li>
+</ul>
+</div>
+
+<div>
+    <h4>Location</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.location.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.location.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.location.Description)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.location.Description)
+        </dd>
+
+
+    </dl>
+</div>
+
+
+<table id="containers" class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.containers.First().Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.containers.First().User.UserName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.containers.First().Location.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.containers.First().Domain.DomainName)
+            </th>
+            @if (User.IsInRole("Admin"))
+            {
+                <th>Actions</th>
+            }
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model.containers)
+        {
+
+            <tr>
+                <td>
+                    @Html.ActionLink(item.Name, "Details", "Containers", new { id = item.ContainerID }, null)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => item.User.UserName)
+                </td>
+                <td>
+                    @Html.ActionLink(item.Location.Name, "Details", "Locations", new { id = item.LocationID }, null)
+                </td>
+                <th>
+                    @Html.ActionLink(item.Domain.DomainName, "Details", "Domains", new { id = item.DomainID }, null)
+                </th>
+                @if (User.IsInRole("Admin"))
+                {
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", "Containers", new { id = item.ContainerID }, null)
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>
+    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+</p>
+

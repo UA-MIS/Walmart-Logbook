@@ -1,0 +1,148 @@
+﻿@using System.Diagnostics.Eventing.Reader
+@model SecurityAssetManager.Models.ViewModels.DupItemViewModel
+
+@{
+    ViewBag.Title = "Duplicate";
+}
+
+<h2>Duplicate</h2>
+
+<script src="~/Scripts/jquery-1.10.2.js"></script>
+<script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+<div id="dupl">
+    @using (Ajax.BeginForm("Duplicate", "Items", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "dupl" }, new { id = "form" }))
+    {
+        @Html.AntiForgeryToken()
+
+        if (User.IsInRole("Admin") || (User.IsInRole("Keyholder") && (User.Identity.Name == Model.Container.User.Email)))
+        {
+            <div class="form-horizontal">
+                <h4>Item</h4>
+                <hr />
+                @Html.HiddenFor(model => model.ItemId)
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.DisplayFor(model => model.Name)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.DisplayFor(model => model.Description)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ContainerId, "ContainerID", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div id="containers" class="col-md-10">
+                        @Html.DropDownList("ContainerID", null, "Select a Container", htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.ContainerId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Barcode, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.DisplayFor(model => model.Barcode)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.NewBarcode, "New Barcode", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.NewBarcode, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.NewBarcode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.KeyHolder, "KeyHolder", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @*@Html.Display("KeyHolder")*@
+                        @*@Html.TextBoxFor(model => model.KeyHolder, new { @class = "form-control", @readonly = "readonly" })*@
+                        @Html.DropDownList("KeyHolder", null, htmlAttributes: new { @class = "form-control", @readOnly = "readonly", disabled = "disabled" })
+                        @Html.ValidationMessageFor(m => m.KeyHolder, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+
+                <div class="form-group" id="password">
+                    @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", type = "password" } })
+                        @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Duplicate" class="btn btn-default" />
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <h4>You don't have permission to perform this action for this item. Please contact its keyholder or an admin.</h4>
+        }
+    }
+</div>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+                $("#ContainerID").change(function () {
+                    $("#KeyHolder").empty();
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("GetKeyHolder")', // we are calling json method
+                        dataType: 'json',
+
+                        data: { id: $("#ContainerID").val() },
+                        // here we are get value of selected container and passing same value
+                        //as input to json method GetKey.
+
+                        success: function (keyHolders) {
+                            // keyHolders contains the JSON formatted list
+                            // of keyHolders passed from the controller
+
+
+                            $.each(keyHolders,
+                                function (i, keyHolders) {
+                                    $("#KeyHolder").append('<option value="' +
+                                        keyHolders.Value +
+                                        '">' +
+                                        keyHolders.Text +
+                                        '</option>');
+                                    // here we are adding option for KeyHolders
+
+                                });
+                            //   $("#password").show();
+
+                        },
+                        error: function (ex) {
+                            alert('Failed to retrieve key holders.' + ex);
+                        }
+                    });
+                    return false;
+                });
+
+
+
+        });
+
+    </script>
+
+}

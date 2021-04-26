@@ -1,0 +1,83 @@
+﻿@model IEnumerable<SecurityAssetManager.Models.Location>
+
+@{
+    ViewBag.Title = "Locations";
+}
+
+@*The purpose of the index view is to view all events that are associated with the specific location.
+    The details include the name of the user, the action that took place, the date, and the ability to view details about the event (in the event that an auditor or
+    other key role needs to see more. *@
+
+<h2>List of Locations</h2>
+
+@if (User.IsInRole("Admin") || User.IsInRole("Auditor"))
+{
+    <div style="float: right; padding: 10px;">
+        <a href="@Url.Action("exportCSV", "Locations")" title="Downloads the list as a .csv file" class="download">
+            <img src="@Url.Content("~/Content/WalmartDownload.png")" style="height:33px;width:45px">
+            <p style="font-size: 10px; color: #003087; margin-bottom:0px;">Download</p>
+        </a>
+    </div>
+}
+
+@if (User.IsInRole("Admin"))
+{
+    <div style="padding: 10px;">
+        <p>
+            @Html.ActionLink("New Location", "Create", "Locations", null, new { @class = "btn btn-primary" })
+        </p>
+    </div>
+}
+
+<table id="locations" class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.First().Name)
+            </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.First().Description)
+            </th>
+
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.ActionLink(item.Name, "Details", new { id = item.LocationID })
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                @if ((User.IsInRole("Admin")))
+                {
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", new { id = item.LocationID })
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            var table = $('#locations').DataTable({
+                aaSorting: [[0, 'asc']],
+                "columns": [
+                    { "name": "Location Name", "orderable": true },
+                    { "name": "Description", "orderable": false },
+                    { "name": "Actions", "orderable": false }
+                ]
+            });
+
+        });
+    </script>
+}

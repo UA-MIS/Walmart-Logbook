@@ -1,0 +1,78 @@
+﻿@model IEnumerable<SecurityAssetManager.Models.Container>
+
+@{
+    ViewBag.Title = "Containers";
+}
+
+<h2>List of Containers</h2>
+
+<p>
+    @Html.ActionLink("New Container", "Create", "Containers", null, new { @class = "btn btn-primary" })
+
+</p>
+
+<table id="containers" class="table">
+    <thead>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.First().Name)
+        </th>  
+        <th>
+            @Html.DisplayNameFor(model => model.First().User.UserName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().Location.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().Domain.DomainName)
+        </th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    @foreach (var item in Model)
+    {
+
+        <tr>
+            <td>
+                @Html.ActionLink(item.Name, "Details", new { id = item.ContainerID })
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.User.UserName)
+            </td>
+            <td>
+                @Html.ActionLink(item.Location.Name, "Details", "Locations", new { id = item.LocationID }, null)
+            </td>
+            <th>
+                @Html.ActionLink(item.Domain.DomainName, "Details", "Domains", new { id = item.DomainID }, null)
+            </th>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.ContainerID }) |
+                @Html.ActionLink("Items", "IndexFiltered", "Items", new { id = item.ContainerID }, "")
+
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            $('#containers').DataTable({
+                aaSorting: [[0, 'asc']],
+                "columns": [
+                    { "name": "Container Name", "orderable": true },
+                    { "name": "Key Holder", "orderable": true },
+                    { "name": "Location Name", "orderable": true },
+                    { "name": "Domain Name", "orderable": true },
+                    { "name": "Actions", "orderable": false }
+                ]
+            });
+        });
+    </script>
+}
+

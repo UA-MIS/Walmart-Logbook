@@ -1,0 +1,50 @@
+﻿@model SecurityAssetManager.Models.Location
+
+@{
+    ViewBag.Title = "Archive";
+}
+
+@*The purpose of this section of code is for the user to archive a particular location. If a data center hub becomes obselete, the location can be archived which means the
+    user will no longer be able to select the location when associating it to a domain. The information of the archived location will remain in the database.*@
+<h2>Archive</h2>
+
+<h3>Are you sure you want to archive this?</h3>
+<div>
+    <h4>Location</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+    </dl>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <dt style="padding-left: 75px">
+            @Html.Label("Justification")
+        </dt>
+
+        <dd>
+            <textarea name="justification" style="margin-left: 180px" required></textarea>
+        </dd>
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Archive" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

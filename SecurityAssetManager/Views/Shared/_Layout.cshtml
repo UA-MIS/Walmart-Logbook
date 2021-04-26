@@ -1,0 +1,78 @@
+﻿@using Microsoft.AspNet.Identity
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="@Url.Content("~/Content/favicon.ico")">
+    <link rel="stylesheet" href="~/Content/Site.css" />
+    <title>@ViewBag.Title - Security Asset Manager</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top" style="background-color: #003087">
+        <div class="container">
+            <div class="navbar-header">
+                <div class="navbar-header pull-left">
+                    <a class="navbar-brand" href="@Url.Action("Index", "Events")">
+                        <img src="~/Images/Walmart_logo.png" alt="Site Logo" style="height:40px; width: 40px; position:relative; top:-10px;" />
+                    </a>
+                </div>  
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @Html.Display("Security Asset Manager")
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    @if (Request.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Keyholder")))
+                    {
+                        <li>@Html.ActionLink("Event Log", "Index", "Events")</li>
+
+                        <li>@Html.ActionLink("Items", "Index", "Items")</li>
+                        <li>@Html.ActionLink("Containers", "Index", "Containers")</li>
+                        <li>@Html.ActionLink("Locations", "Index", "Locations")</li>
+                        if (User.IsInRole("Admin"))
+                        {
+                            <li>@Html.ActionLink("Domains", "Index", "Domains")</li>
+                            <li>@Html.ActionLink("Roles", "Index", "RolesAdmin")</li>
+                            <li>@Html.ActionLink("Users", "Index", "UsersAdmin")</li>
+                        }
+                    }
+                    else if (Request.IsAuthenticated)
+                    {
+                        <li>@Html.ActionLink("Event Log", "Index", "Events")</li>
+                        <li>@Html.ActionLink("Items", "Index", "Items")</li>
+                        <li>@Html.ActionLink("Containers", "Index", "Containers")</li>
+                        <li>@Html.ActionLink("Locations", "Index", "Locations")</li>
+
+                        if (User.IsInRole("Auditor"))
+                        {
+                            <li>@Html.ActionLink("Domains", "Index", "Domains")</li>
+                            <li>@Html.ActionLink("Users", "Index", "UsersAdmin")</li>
+                        }
+                    }
+                </ul>
+                @Html.Partial("_LoginPartial");
+
+
+
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            @*<p>&copy; @DateTime.Now.Year - Security Asset Manager</p>*@
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/lib")
+    @RenderSection("scripts", required: false)
+</body>
+</html>
